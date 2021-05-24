@@ -23,6 +23,7 @@ class SaveHyperLinkTask implements Runnable {
 	private String url;
 	private int index;
 	
+	// Timeout for HTTP Requests so threads don't get stuck
 	private static final int TIMEOUT = 5000;
 
 	public SaveHyperLinkTask(String url, int index) {
@@ -32,6 +33,7 @@ class SaveHyperLinkTask implements Runnable {
 
 	@Override
 	public void run() {
+		long start = System.currentTimeMillis();
 		try {
 			CloseableHttpClient httpclient = HttpClients.createMinimal();
 			HttpGet httpget = new HttpGet(url);
@@ -61,19 +63,51 @@ class SaveHyperLinkTask implements Runnable {
 			Log log = LogFactory.getLog("SaveHyperLink");
 			log.error("TASK FAILED " + e.getMessage());
 		}
-		System.out.println("Thread complete" + index);
+		long end = System.currentTimeMillis() - start;
+		System.out.println("Thread complete: - " + index + " - Time: " + end);
 	}
 
 }
 
 public class WebFetch {
+	
+	/**
+	 * How many threads to fetch HTML content in parallel
+	 * Tested with 8 cores
+	 */
+	private static final int THREAD_AMOUNT = 50;
+	
+	private static String SITE_URL;
+	
+	/**
+	 * Takes a whole hyperlink html tag and extracts the href part
+	 * @param match - hyperlink html tag
+	 * @param hrefMatch - either version with ' or version with "
+	 * @param previousLinks - previous found links to prevent duplicates
+	 * @return only the url within the html tag
+	 */
+	private static String extractLink(String match, String hrefChar, ArrayList<String> previousLinks) {
+		if (!match.contains("href=" + hrefChar + "#")) {
+			String[] linkParts = match.split("href=" + hrefChar);
+			if (linkParts.length >= 2) {
+				// Get only the link part of the href part
+				String[] urlParts = linkParts[1].split(hrefChar);
+				String url = urlParts[0];
+				// If relative URL add back the site location for later processing
+				if (!url.startsWith("http"))
+					url = SITE_URL.concat(url);
+				return url;
+			}
+		}
+		return null;
+	}
 
 	public static void main(String args[]) {
 		System.out.println("Please enter your URL");
 		Scanner urlScanner = new Scanner(System.in);
-		String SITE_URL = urlScanner.nextLine();
+		SITE_URL = urlScanner.nextLine();
 		urlScanner.close();
-		ExecutorService pool = Executors.newFixedThreadPool(50);
+		ExecutorService pool = Executors.newFixedThreadPool(THREAD_AMOUNT);
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpGet httpget = new HttpGet(SITE_URL);
 		try {
@@ -84,25 +118,31 @@ public class WebFetch {
 				String line = sc.nextLine();
 				page.append(line);
 			}
-			Pattern linkPattern = Pattern.compile("(<a[^>]+>.+?<\\/a>)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			
+			//Match hyperlink tags with regex
+			String aTagRegex = "(<a[^>]+>.+?<\\/a>)";
+			Pattern linkPattern = Pattern.compile(aTagRegex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 			Matcher pageMatcher = linkPattern.matcher(page);
+			
+			//Extract URL from hyperlink tag and submit for get request
 			ArrayList<String> links = new ArrayList<String>();
 			int index = 0;
 			while (pageMatcher.find()) {
 				String match = pageMatcher.group();
-				if (!match.contains("href=\"#")) {
-					String[] linkParts = match.split("href=\"");
-					if (linkParts.length >= 2) {
-						String[] urlParts = linkParts[1].split("\"");
-						String url = urlParts[0];
-						if (!url.startsWith("http") && !links.contains(url))
-							url = SITE_URL.concat(url);
-						links.add(url);
-						pool.execute(new SaveHyperLinkTask(url, index));
-						index++;
+				String extracted = "";
+				//Extract links that use ' in href of " in href
+				if((extracted = extractLink(match, "\"", links)) != null || (extracted = extractLink(match, "\'", links)) != null) {
+					//Ensure no duplicates
+					if(!links.contains(extracted)) {
+						// Add link to previous links list for checking duplicates
+						links.add(extracted);
+						// Add new task with the link for processing in parallel
+						pool.execute(new SaveHyperLinkTask(extracted, ++index));
 					}
-				}
+				}		
 			}
+			
+			// Finished submitting tasks save the main page content and close
 			System.out.println("Finished submitting tasks");
 			pool.shutdown();
 			File file = new File("out/main.html");
@@ -113,6 +153,7 @@ public class WebFetch {
 			System.out.println("Saved main content");
 			writer.close();
 			httpclient.close();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
