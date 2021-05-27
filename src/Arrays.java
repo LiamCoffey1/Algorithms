@@ -1,15 +1,34 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Arrays {
 	public static void main(String args[]) {
 		Arrays arrs = new Arrays();
-		arrs.missingNumberUnOrdered();
+		ArrayList<Integer> unions = Arrays.findIntersection(new int[] {1,1,1,1,1,1,1,1,1,2,3}, new int[] {1,2,3,4,5},11,5);
+		for(int union : unions) {
+			System.out.println(union);
+		}
 	}
 	void printArray(int[] arr) {
 		for(int ele : arr) 
 			System.out.print("[" + ele + "]");
 		System.out.println();
 	}
+	
+	public static ArrayList<Integer> duplicates(int arr[], int n) {
+        java.util.Arrays.sort(arr);;
+        ArrayList<Integer> dups = new ArrayList<Integer>();
+        int lastDuplicate = -1;
+        for(int i = 0; i < arr.length-1; i++) {
+            if(arr[i] == arr[i+1] && lastDuplicate != arr[i]) {
+                dups.add(arr[i]);
+                lastDuplicate = arr[i];
+            }
+        }
+        if(dups.size() == 0)
+            dups.add(-1);
+        return dups;
+    }
 	
 	void findDuplicate() {
 		int[] arr = new int[] {1,2,3,4,4,5,5,6,1};
@@ -75,6 +94,68 @@ public class Arrays {
 		int answer = expectedSum - sum;
 		System.out.println(answer);
 	}
+	
+	
+	
+	static void addIfNotDuplicate(int index, int[] array, ArrayList<Integer> list_ptr) {
+		if( index == 0 || array[index] != array[index-1])
+			list_ptr.add(array[index]);
+	}
+	//Function to return a list containing the union of the two arrays.
+	// With repeating elements
+    public static ArrayList<Integer> findUnion(int arr1[], int arr2[], int n, int m)
+    {
+        ArrayList<Integer> union = new ArrayList<Integer>();
+        int i = 0; int j = 0;
+        
+        // Terminate when one reaches end of array
+		while(i < n && j < m) {
+		    if(arr1[i] < arr2[j]) {
+		    	addIfNotDuplicate(i, arr1, union);
+		        i++;
+		    } else if (arr1[i] > arr2[j]) {
+		    	addIfNotDuplicate(j, arr2, union);
+		        j++;
+		    } else { // arr1[i] == arr2[j]
+		    	addIfNotDuplicate(i, arr1, union);
+		        i++;
+		        j++;
+		    }
+		}
+		//Fill Remaining
+		while(i < n) {
+			addIfNotDuplicate(i, arr1, union);
+		    i++;
+		}
+		//Fill Remaining
+		while(j < m) {
+		    addIfNotDuplicate(j, arr2, union);
+		    j++;
+		}
+		return union;
+        
+    }
+    
+    public static ArrayList<Integer> findIntersection(int arr1[], int arr2[], int n, int m)
+    {
+        ArrayList<Integer> intersection = new ArrayList<Integer>();
+        int i = 0; int j = 0;
+        
+        // Terminate when one reaches end of array
+		while(i < n && j < m) {
+		    if(arr1[i] < arr2[j]) {
+		        i++;
+		    } else if (arr1[i] > arr2[j]) {
+		        j++;
+		    } else { // arr1[i] == arr2[j]
+		    	addIfNotDuplicate(i, arr1, intersection);
+		        i++;
+		        j++;
+		    }
+		}
+		return intersection;
+        
+    }
 	
 
 	void reverseInPlace() {

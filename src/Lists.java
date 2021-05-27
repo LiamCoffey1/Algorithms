@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.Stack;
 
 class DELinkedList {
@@ -37,6 +38,31 @@ class LinkedList {
 		return newList;
 	}
 	
+	public Node toCircular(Node head) {
+		Node last = head;
+		while(last.next != null)
+			last = last.next;
+		last.next = head;
+		return last;
+	}
+	
+	 public int getMiddleIndex(Node head)
+	    {
+	        int size = 0;
+	        Node copy = head;
+	        while(copy != null) {
+	            size++;
+	            copy = copy.next;
+	        }
+	       return size >> 1;
+	    }
+	
+	 public int getMiddleValue(Node head)
+	  {
+	      int middle_index = getMiddleIndex(head);
+	      return getValueByIndex(middle_index);
+	  }
+	
 	public int size() {
 		Node copy = head;
 		int i = 0;
@@ -56,6 +82,34 @@ class LinkedList {
 		newNode.next = head;
 		head = newNode;
 	}
+	
+	int getNthFromLast(Node head, int n)
+    {
+        HashMap<Integer, Node> locs = new HashMap<Integer, Node>();
+        int i = 1;
+        while(head != null) {
+            locs.put(i, head);
+            i++;
+            head = head.next;
+        }
+        Node result = locs.get(i - n);
+        return result == null ? -1 : result.value;
+    }
+	
+	/*
+	 * Floyd’s Cycle-Finding Algorithm:  
+	 */
+    public static boolean detectLoop(Node head){
+        Node slow = head;
+        Node fast = head;
+        while(slow != null && fast != null && fast.next != null ) {
+           slow = slow.next;
+           fast = fast.next.next;
+           if(slow == fast)
+                return true;
+        }
+        return false;
+    }
 	
 	public void remove(int key) {
 		if(head.value == key) {

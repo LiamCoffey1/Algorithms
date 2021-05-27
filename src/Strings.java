@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Strings {
@@ -8,6 +9,9 @@ public class Strings {
 		strs.reverseWords();
 	}
 	
+	/*
+	 * Idea reverse whole sentence then reverse each word
+	 */
 	void reverseWords() {
 		String test = "Hello i am liam";
 		String reversed = reverseRecurse(test);
@@ -68,6 +72,23 @@ public class Strings {
 		else return input.charAt(input.length()-1) + reverseRecurse(input.substring(0, input.length()-1));
 	}
 	
+	public static boolean isAnagramSorting(String a,String b)
+    {
+        if(a.length() != b.length())
+        	return true;
+        char[] c = a.toCharArray();
+        char[] d = b.toCharArray();
+     
+        Arrays.sort(c);
+        Arrays.sort(d);
+        for(int i = 0; i < c.length; i++) {
+        	if (c[i] != d[i])
+        		return false;
+        }
+        return true;
+        
+    }
+	
 	/**
 	 * IsAnagram
 	 * Idea, store counts of each char
@@ -75,26 +96,31 @@ public class Strings {
 	 * If found and found previously - 0
 	 * counts should all be 0 by the end of iters
 	 */
-	HashMap<Character, Integer> charCounts = new HashMap<Character, Integer>();
-	void check(char c) {
-		if(charCounts.containsKey(c))
-			charCounts.put(c, 0);
-		else charCounts.put(c, 1);
-	}
-	void isAnagram() {
-		boolean isAnagram = true;
-		String str1 = "Liam", str2 = "iamL";
-		if(str1.length() == str2.length()) { // If not equal definitely not anagram
-			for(int i = 0 ; i < str1.length(); i++) {
-				check(str1.charAt(i));
-				check(str2.charAt(i));
-			}
-			for(Integer count : charCounts.values())
-				if(count != 0)
-					isAnagram = false;
-		} 
-		else isAnagram = false;
-		System.out.println("Is an anagram: " + isAnagram);
-	}
+	public static boolean isAnagram(String a,String b)
+    {
+        
+        HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
+        if(a.length() != b.length())
+            return false;
+        for(int i = 0; i < a.length(); i++) {
+            char first = a.charAt(i);
+            char second = b.charAt(i);
+            
+            if(counts.get(first) != null && counts.get(first) != 0)
+                counts.put(first, 0);
+            else counts.put(first, 1);
+            
+            if(counts.get(second) != null && counts.get(second) != 0)
+                counts.put(second, 0);
+            else counts.put(second, 1);
+            
+        }
+        for(int vals : counts.values()) {
+            if(vals != 0)
+                return false;
+        }
+        return true;
+        
+    }
 	
 }
