@@ -9,6 +9,31 @@ public class Strings {
 		strs.reverseWords();
 	}
 	
+	
+	/*
+	 * Given an array of strings, return another array containing all of its longest strings.
+	 */
+	String[] allLongestStrings(String[] inputArray) {
+	    int maxLength = Integer.MIN_VALUE;
+	    for(String s : inputArray) {
+	        if(s.length() > maxLength)
+	            maxLength = s.length();
+	    }
+	    int countsOfMax = 0;
+	    for(String s1 : inputArray) {
+	        if(s1.length() == maxLength)
+	            countsOfMax++;
+	    }
+	    String[] s = new String[countsOfMax];
+	    int pointer = 0;
+	    for(String s3 : inputArray) {
+	        if(s3.length() == maxLength)
+	            s[pointer++] = s3;
+	    }
+	    return s;
+	}
+
+	
 	/*
 	 * Idea reverse whole sentence then reverse each word
 	 */
@@ -36,6 +61,35 @@ public class Strings {
 			System.out.print("[" + ele + "]");
 		System.out.println();
 	}
+	
+	
+	/**
+	 * Given two strings s and t, both consisting of lowercase English letters and digits, your task is to calculate how many ways exactly one digit could be removed from one of the strings so that s is lexicographically smaller than t after the removal. Note that we are removing only a single instance of a single digit, rather than all instances (eg: removing 1 from the string a11b1c could result in a1b1c or a11bc, but not abc).
+
+Also note that digits ar
+	 * @param s
+	 * @param t
+	 * @return
+	 */
+	int removeOneDigit(String s, String t) {
+	    int count = 0;
+	    for(int i = 0; i < s.length(); i++) {
+	        if(Character.isDigit(s.charAt(i))) {
+	            String comparator = s.replace("" + s.charAt(i), "");
+	            if(comparator.compareTo(t) < 0)
+	                count++;
+	        }
+	    }
+	    for(int j = 0; j < t.length(); j++) {
+	         if(Character.isDigit(t.charAt(j))) {
+	            String comparator = t.replace("" + t.charAt(j), "");
+	            if(comparator.compareTo(s) > 0)
+	                count++;
+	         }
+	    }
+	    return count;
+	}
+
 	
 	void isPalindrome() {
 		String pal = "miaaim";

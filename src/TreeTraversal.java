@@ -13,6 +13,18 @@ class TreeNode {
 	}
 }
 
+class Tree<K> {
+	Tree<K> left, right;
+	K currentValue;
+
+	Tree(K value, Tree<K> left, Tree<K> right) {
+		this.left = left;
+		this.right = right;
+		this.currentValue = value;
+	}
+}
+
+
 
 
 
@@ -64,6 +76,30 @@ public class TreeTraversal {
 	   return false;
 	}
 	
+	/*
+	 *  The idea is to do in order traversal of the binary tree.
+	 *  While doing inorder traversal, keep track of the previously visited node in a variable,
+	 *  say prev. For every visited node, make it next to the prev and previous of this node as prev.
+	 */
+	Node prev = null;
+    Node head;
+    //Function to convert binary tree to doubly linked list and return it.
+    Node bToDLL(Node root)
+    {
+	    if(root == null)
+	        return head;
+	    bToDLL(root.left);
+	    if(prev == null)
+	        head = root;
+	    else {
+	        root.left = prev;
+	        prev.right = root;
+	    }
+	    prev = root;
+	    bToDLL(root.right);
+	    return head;
+    }
+	
 	int getSum(Node root) {
         if(root == null)
             return 0;
@@ -110,12 +146,69 @@ public class TreeTraversal {
 		}
 		
 	}
+	
+	/*
+    Given a tree and a sum,
+    return true if there is a path
+    from the root down to a leaf,
+    such that adding up all
+    the values along the path
+    equals the given sum.
+
+    Strategy: subtract the node
+    value from the sum when
+    recurring down, and check to
+    see if the sum is 0 when
+    you run out of tree.
+    */
+	
+	boolean hasPathWithGivenSum(Tree<Integer> t, int s) {
+	    //If not found or tree is empty
+	    if(t == null)
+	        return false;
+	    int newSum = s - t.currentValue;
+	    //If current is leaf and correct sum -> true
+	    if(newSum == 0 && t.left == null && t.right == null)
+	        return true;
+	    return hasPathWithGivenSum(t.left, newSum) ||
+	        hasPathWithGivenSum(t.right, newSum); 
+	}
+
+
+	
+	boolean isEqualSymetric(TreeNode root1, TreeNode root2)
+	{
+	    if(root1 == null && root2 == null)
+	        return true;
+        if(root1 == null || root2 == null)
+            return false;
+        return (root1.currentValue.equals(root2.currentValue)) &&
+            isEqualSymetric(root1.left, root2.right) &&
+	        isEqualSymetric(root1.right, root2.left);
+	}
+	boolean isTreeSymmetric(TreeNode t) {
+	    if(t == null)
+	        return true;
+	    return isEqualSymetric(t.left, t.right);
+	}
+
 
 	static void postOrder(TreeNode node) {
 		if (node == null)
 			return;
 		inOrder(node.left);
 		inOrder(node.right);
+		System.out.println(node.currentValue);
+	}
+	
+	/*
+	 * Same exept process right subtrees first
+	 */
+	static void postOrderReverse(TreeNode node) {
+		if (node == null)
+			return;
+		inOrder(node.right);
+		inOrder(node.left);
 		System.out.println(node.currentValue);
 	}
 
